@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket and (optional) RDS PostgreSQL for SkillBridge
+Parameters:
+  CreateRDS:
+    Type: String
+    AllowedValues: ["Yes","No"]
+    Default: "No"
+  DBUsername:
+    Type: String
+    Default: admin
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Default: "ChangeMeStrong#123"
+
+Conditions:
+  WantRDS: !Equals [!Ref CreateRDS, "Yes"]
+
+Resources:
+  SkillBridgeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "skillbridge-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+
+  SkillBridgeDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: WantRDS
+    Properties:
+      DBSubnetGroupDescription: Subnets for RDS
+      SubnetIds: !Split [",", !ImportValue SkillBridgePrivateSubnets ]
+
+  SkillBridgeDB:
+    Type: AWS::RDS::DBInstance
+    Condition: WantRDS
+    Properties:
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref SkillBridgeDBSubnetGroup
+      MultiAZ: false
+
+Outputs:
+  BucketName:
+    Value: !Ref SkillBridgeBucket
+  RDSEndpoint:
+    Condition: WantRDS
+    Value: !GetAtt SkillBridgeDB.Endpoint.Address
