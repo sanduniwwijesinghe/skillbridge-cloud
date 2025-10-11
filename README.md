@@ -85,9 +85,3 @@ skillbridge-cloud/
  ├─ .github/workflows/
  └─ README.md
 ```
-
-## Viva Tips (25 Oct)
-
-- Show AWS Console (region = ap-south-1), S3 bucket, CloudFormation stacks.
-- Run at least one service (`/health` endpoint) locally or on EC2.
-- Explain NFRs: scalability (pods), security (IAM), affordability (free tier).
