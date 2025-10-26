@@ -71,3 +71,4 @@ docker-compose.override.yml
 tmp/
 cache/
 __temp__/
+frontend/node_modules/
