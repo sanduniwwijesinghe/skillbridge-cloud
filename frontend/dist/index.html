@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillBridge | Expert Mentorship</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ROOT VARIABLES --- */
+        :root {
+            --primary-color: #6D28D9;
+            --primary-hover: #5B21B6;
+            --light-purple: #ede9fe;
+            --light-gray: #f3f4f6;
+            --medium-gray: #d1d5db;
+            --dark-gray: #374151;
+            --text-color: #111827;
+            --white: #ffffff;
+            --danger-color: #dc2626;
+            --success-bg: #d1fae5;
+            --success-text: #065f46;
+            --error-bg: #fee2e2;
+            --info-bg: #e0f2fe;
+            --info-text: #075985;
+            --warning-bg: #fef3c7;
+            --warning-text: #92400e;
+        }
+
+        /* --- GLOBAL & AUTH STYLES --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        main { padding: 2rem; max-width: 500px; margin: 2rem auto; }
+        .container {
+            background-color: var(--white); padding: 2.5rem; border-radius: 8px;
+            margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        #auth-view { max-width: 500px; margin: 2rem auto; }
+        .hidden { display: none !important; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; color: var(--dark-gray); }
+        input[type="email"], input[type="password"], input[type="text"], select {
+            width: 100%; padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 6px;
+            border: 1px solid var(--medium-gray); box-sizing: border-box; font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2);
+        }
+        .auth-button {
+            width: 100%; padding: 0.875rem; background-color: var(--primary-color); color: white;
+            font-weight: 600; cursor: pointer; border: none; border-radius: 6px; font-size: 1rem;
+            transition: background-color 0.2s ease; margin-top: 1rem;
+        }
+        .auth-button:hover { background-color: var(--primary-hover); }
+        .auth-button:disabled { background-color: var(--medium-gray); cursor: not-allowed; }
+        .auth-toggle { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; }
+        .auth-toggle a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        #profile-type-selector { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        .profile-type-button {
+            padding: 0.6rem 1.2rem; border: 1px solid var(--medium-gray); border-radius: 6px; cursor: pointer;
+            transition: all 0.2s ease; background-color: var(--white); color: var(--dark-gray);
+            font-size: 0.9rem; flex-grow: 1; text-align: center;
+        }
+        .profile-type-button.selected { border-color: var(--primary-color); background-color: var(--primary-color); color: var(--white); }
+        .mentor-fields {
+            max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; margin-top: 1.5rem;
+            padding-top: 1.5rem; border-top: 1px solid var(--light-gray);
+        }
+        .mentor-fields.visible { max-height: 500px; }
+        .mentor-fields h4 { margin-top: 0; margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--primary-color); }
+        .multi-select-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+        .multi-select-label {
+            display: block; padding: 0.6rem; border: 1px solid var(--medium-gray); border-radius: 4px; cursor: pointer;
+            text-align: center; font-size: 0.875rem; transition: all 0.2s ease;
+        }
+        .multi-select-container input:checked + .multi-select-label { background-color: var(--light-purple); color: var(--primary-color); border-color: var(--primary-color); }
+        .multi-select-container input { display: none; }
+        .api-message { margin-top: 1rem; padding: 0.75rem; border-radius: 4px; text-align: center; font-weight: 500; font-size: 0.9rem; }
+        .api-message.success { background-color: var(--success-bg); color: var(--success-text); }
+        .api-message.error { background-color: var(--error-bg); color: var(--danger-color); }
+
+        /* --- APP HEADER STYLES --- */
+        header {
+            background-color: var(--white); padding: 1rem 2rem; border-bottom: 1px solid var(--medium-gray);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        header .logo {
+            color: var(--primary-color); margin: 0; font-weight: 700; font-size: 1.75rem;
+            text-decoration: none;
+        }
+
+        #welcome-banner { display: flex; align-items: center; gap: 1.5rem; }
+        .user-menu .icon-button {
+            background: none; border: none; cursor: pointer; color: var(--dark-gray);
+        }
+        .user-menu .icon-button svg { width: 24px; height: 24px; }
+        .user-menu .profile-toggle {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 500; cursor: pointer; color: var(--text-color);
+        }
+        .user-menu .profile-toggle svg { width: 28px; height: 28px; color: var(--dark-gray); }
+        #logoutBtn {
+            width: auto; background-color: var(--danger-color); padding: 0.5rem 1rem;
+            font-size: 0.9rem; margin: 0;
+        }
+        #logoutBtn:hover { background-color: #b91c1c; }
+
+        /* --- APP LAYOUT STYLES --- */
+        #app-view {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+        }
+
+        /* --- SIDEBAR STYLES --- */
+        .sidebar {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            align-self: start;
+        }
+        .sidebar h2 {
+            font-size: 1.25rem;
+            border-bottom: 1px solid var(--light-gray);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .sidebar-nav { list-style: none; }
+        .sidebar-nav li { margin-bottom: 0.5rem; }
+        .sidebar-nav a {
+            display: block; padding: 0.75rem 1rem; border-radius: 6px;
+            text-decoration: none; color: var(--dark-gray);
+            font-weight: 500; font-size: 0.95rem; transition: all 0.2s ease;
+        }
+        .sidebar-nav a:hover { background-color: var(--light-gray); }
+        .sidebar-nav a.active { background-color: var(--light-purple); color: var(--primary-color); }
+
+        #sidebar-profile-details {
+            border-top: 1px solid var(--light-gray);
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+        }
+        #sidebar-profile-details h4 {
+            font-size: 0.75rem; color: var(--dark-gray); text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 0.75rem;
+        }
+        .detail-item {
+            font-size: 0.875rem; font-weight: 500; padding: 0.25rem 0.75rem;
+            border-radius: 99px; background-color: var(--light-gray);
+            color: var(--dark-gray); margin: 0.25rem; display: inline-block;
+        }
+        .detail-item.badge { background-color: var(--success-bg); color: var(--success-text); }
+
+        /* --- MAIN CONTENT STYLES --- */
+        .main-content { min-width: 0; }
+        .main-content h1 { font-size: 2rem; margin-bottom: 1.5rem; }
+        .app-page { display: none; }
+        .app-page.active { display: block; }
+
+        /* --- Dashboard Page --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+        .news-card {
+            background-color: var(--white); border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 1.5rem;
+        }
+        .news-card h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .news-item {
+            display: flex; gap: 1rem; margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem; border-bottom: 1px solid var(--light-gray);
+        }
+        .news-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .news-item img { width: 100px; height: 60px; object-fit: cover; border-radius: 4px; }
+        .news-item-content h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+        .news-item-content p { font-size: 0.875rem; color: var(--dark-gray); }
+
+        /* --- Video Card Styles --- */
+        .video-card {
+            grid-column: 1 / span 2;
+            background-color: #111;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            overflow: hidden;
+            color: white;
+            position: relative;
+        }
+        .video-player {
+            width: 100%;
+            height: 400px;
+            background-color: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #888;
+        }
+        .video-controls {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #222;
+            justify-content: center;
+            border-top: 1px solid #333;
+        }
+        .video-controls button {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            margin-top: 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .btn-video-primary { background-color: #10b981; color: white; }
+        .btn-video-primary:hover { background-color: #059669; }
+        .btn-video-danger { background-color: var(--danger-color); color: white; }
+        .btn-video-danger:hover { background-color: #b91c1c; }
+
+
+        /* --- Find Mentor Page --- */
+        .filters {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem; background-color: var(--white); padding: 1.5rem;
+            border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .filter-group label { margin-bottom: 0.5rem; }
+        .filters select { margin-bottom: 0; }
+
+        /* MODIFIED Mentor List Layout */
+        .mentor-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .mentor-card {
+            background-color: var(--white); border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 80px 3fr 2fr; /* Avatar | Info/Tags | Actions */
+            align-items: center;
+            padding: 1rem 1.5rem;
+        }
+        .mentor-card .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-right: 1.5rem;
+            border-right: 1px solid var(--light-gray);
+        }
+        .mentor-card .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background-color: var(--light-gray); }
+        .mentor-card .mentor-info { padding: 0 1rem; }
+        .mentor-card .mentor-info h3 { font-size: 1.15rem; color: var(--text-color); margin-bottom: 0.2rem;}
+        .mentor-card .mentor-info p { font-size: 0.9rem; color: var(--dark-gray); }
+
+        .mentor-card .tags-container {
+             display: flex;
+             flex-direction: column;
+             gap: 0.5rem;
+             padding-left: 1rem;
+        }
+        .mentor-card .tags-container h4 {
+            font-size: 0.75rem; color: var(--dark-gray); text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 0;
+        }
+        .mentor-card .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+        .mentor-card .card-footer {
+            margin-top: auto; display: flex; gap: 0.5rem; padding: 0;
+            justify-content: flex-end; /* Push buttons to the right */
+        }
+        .btn {
+            padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; border: none;
+            border-radius: 6px; font-size: 0.9rem; transition: all 0.2s ease;
+            text-align: center; text-decoration: none;
+        }
+        .btn-primary { background-color: var(--primary-color); color: white; flex: 1; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary {
+            background-color: var(--white); color: var(--dark-gray);
+            border: 1px solid var(--medium-gray); flex: 1;
+        }
+        .btn-secondary:hover { background-color: var(--light-gray); }
+
+        /* --- My Profile Page --- */
+        #profile-update-form .form-section {
+            background-color: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--light-gray);
+        }
+        #profile-update-form h4 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        #profile-update-form .multi-select-container {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        /* --- Other Placeholder Pages --- */
+        .placeholder-content {
+            padding: 3rem; text-align: center; background-color: var(--white);
+            border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .placeholder-content h2 { font-size: 1.5rem; color: var(--dark-gray); }
+    </style>
+</head>
+<body>
+
+    <!-- This header is SHARED between auth and app views -->
+    <header>
+        <a href="#" class="logo">SkillBridge</a>
+
+        <!-- User Menu (Hidden by default) -->
+        <div id="welcome-banner" class="user-menu hidden">
+            <button class="icon-button" aria-label="Messages">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
+            </button>
+            <div class="profile-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span id="profile-toggle-name">User</span>
+            </div>
+            <button id="logoutBtn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- This main tag wraps BOTH views -->
+    <main>
+        <!-- AUTH VIEW (Original forms) -->
+        <div id="auth-view">
+            <div id="login-form" class="container">
+                <h3>Sign In to Your Account</h3>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Password">
+                </div>
+                <!-- FIXED ID: loginBtn -->
+                <button id="loginBtn" class="auth-button" onclick="loginUser(event)">Sign In</button>
+                <p class="auth-toggle">Don't have an account? <a href="#" onclick="toggleAuth('signup'); return false;">Sign Up</a></p>
+                <div id="login-message" class="api-message hidden"></div>
+            </div>
+
+            <div id="signup-form" class="container hidden">
+                <h3>Create a New Account</h3>
+                <div id="profile-type-selector">
+                    <button class="profile-type-button selected" data-type="mentee">I am a Mentee</button>
+                    <button class="profile-type-button" data-type="mentor">I am a Mentor</button>
+                </div>
+                <input type="hidden" id="profileType" value="mentee">
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Password (min. 8 characters)">
+                </div>
+                <div id="mentor-fields-container" class="mentor-fields">
+                    <h4>Mentor Details</h4>
+                    <div class="form-group">
+                        <label for="seniority">Seniority Level</label>
+                        <select id="seniority">
+                            <option value="senior">Senior Engineer</option>
+                            <option value="staff">Staff Engineer</option>
+                            <option value="principal">Principal Engineer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Domains of Expertise</label>
+                        <div class="multi-select-container" id="domains">
+                            <input type="checkbox" id="backend" value="backend"><label class="multi-select-label" for="backend">Backend</label>
+                            <input type="checkbox" id="frontend" value="frontend"><label class="multi-select-label" for="frontend">Frontend</label>
+                            <input type="checkbox" id="devops" value="devops"><label class="multi-select-label" for="devops">DevOps</label>
+                            <input type="checkbox" id="data" value="data"><label class="multi-select-label" for="data">Data</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Specialist Badges</label>
+                        <div class="multi-select-container" id="badges">
+                            <input type="checkbox" id="interview" value="interview"><label class="multi-select-label" for="interview">Interview Coach</label>
+                            <input type="checkbox" id="system-design" value="system-design"><label class="multi-select-label" for="system-design">System Design</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- FIXED ID: signupBtn -->
+                <button id="signupBtn" class="auth-button" onclick="signupUser(event)">Create Account</button>
+                <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuth('login'); return false;">Sign In</a></p>
+                <div id="signup-message" class="api-message hidden"></div>
+            </div>
+        </div>
+
+        <!-- APP VIEW (The dashboard layout) -->
+        <div id="app-view" class="hidden">
+
+            <!-- Column 1: Profile Sidebar -->
+            <nav class="sidebar">
+                <h2 id="sidebar-title">Welcome, Mentee!</h2>
+                <ul class="sidebar-nav" id="sidebar-nav-links">
+                    <!-- Links will be populated by JS -->
+                </ul>
+
+                <!-- This section is for MENTORS ONLY -->
+                <div id="sidebar-profile-details" class="hidden">
+                    <h4>My Mentor Profile</h4>
+                    <p id="user-seniority-display" class="detail-item"></p>
+                    <h4 style="margin-top: 1rem;">Domains</h4>
+                    <div id="user-domains-display" class="tags"></div>
+                    <h4 style="margin-top: 1rem;">Badges</h4>
+                    <div id="user-badges-display" class="tags"></div>
+                </div>
+            </nav>
+
+            <!-- Column 2: Main Content Area -->
+            <main class="main-content">
+                <h1 id="main-content-title">Dashboard</h1>
+
+                <!-- NEW: General API Message Area for App Actions -->
+                <div id="app-api-message" class="api-message hidden" style="margin-bottom: 1rem;"></div>
+
+                <!-- Page 1: Dashboard -->
+                <div id="page-Dashboard" class="app-page active">
+                    <div class="dashboard-grid">
+
+                        <!-- NEW: Live Session / WebRTC Placeholder Card (Spans all columns) -->
+                        <div class="video-card">
+                            <div class="video-player">
+                                <span id="video-status">WebRTC Session Ready. Click Join to start.</span>
+                            </div>
+                            <div class="video-controls">
+                                <button class="btn btn-video-primary" onclick="alert('Starting video stream for room 123...');">
+                                    Join Session (WebRTC)
+                                </button>
+                                <button class="btn btn-video-danger" onclick="alert('Ending session.');">
+                                    End Session
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Latest News Card -->
+                        <div class="news-card">
+                            <h3>Latest News & Updates</h3>
+                            <div class="news-item">
+                                <img src="https://placehold.co/100x60/6D28D9/FFFFFF?text=News" alt="News thumbnail">
+                                <div class="news-item-content">
+                                    <h4>New System Design Course Available</h4>
+                                    <p>A new self-paced course by top mentors is now open for enrollment.</p>
+                                </div>
+                            </div>
+                            <div class="news-item">
+                                <img src="https://placehold.co/100x60/10B981/FFFFFF?text=Tip" alt="Tip thumbnail">
+                                <div class="news-item-content">
+                                    <h4>Tip of the Week: Ask Better Questions</h4>
+                                    <p>Learn how to structure your questions to get better, faster help from mentors.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Stats Card -->
+                        <div class="news-card">
+                            <h3>My Stats</h3>
+                            <p>You have 0 upcoming sessions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Find a Mentor -->
+                <div id="page-Find Mentor" class="app-page">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="filter-domain">Domain</label>
+                            <select id="filter-domain" onchange="fetchMentorsWithFilters()">
+                                <option value="">All</option>
+                                <option value="backend">Backend</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="devops">DevOps</option>
+                                <option value="data">Data</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-seniority">Seniority</label>
+                            <select id="filter-seniority" onchange="fetchMentorsWithFilters()">
+                                <option value="">All</option>
+                                <option value="senior">Senior</option>
+                                <option value="staff">Staff</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-badge">Badge</label>
+                            <select id="filter-badge" onchange="fetchMentorsWithFilters()">
+                                <option value="">All</option>
+                                <option value="interview">Interview Coach</option>
+                                <option value="system-design">System Design</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Mentor cards will be rendered here by JS -->
+                    <div class="mentor-list" id="mentor-list-container">
+                        <p>Loading mentors...</p>
+                    </div>
+                </div>
+
+                <!-- Page 3: My Profile (Mentor Update Page) -->
+                <div id="page-My Profile" class="app-page">
+                    <h2>Update My Mentor Profile</h2>
+                    <div id="profile-update-form">
+                        <div class="form-section">
+                            <h4>Seniority Level</h4>
+                            <div class="form-group">
+                                <label for="updateSeniority">Current Level</label>
+                                <select id="updateSeniority">
+                                    <option value="senior">Senior Engineer</option>
+                                    <option value="staff">Staff Engineer</option>
+                                    <option value="principal">Principal Engineer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Domains of Expertise</h4>
+                            <div class="form-group">
+                                <label>Select areas you mentor in:</label>
+                                <div class="multi-select-container" id="updateDomains">
+                                    <input type="checkbox" id="upd_backend" value="backend"><label class="multi-select-label" for="upd_backend">Backend</label>
+                                    <input type="checkbox" id="upd_frontend" value="frontend"><label class="multi-select-label" for="upd_frontend">Frontend</label>
+                                    <input type="checkbox" id="upd_devops" value="devops"><label class="multi-select-label" for="upd_devops">DevOps</label>
+                                    <input type="checkbox" id="upd_data" value="data"><label class="multi-select-label" for="upd_data">Data</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Specialist Badges</h4>
+                            <div class="form-group">
+                                <label>Select specialist badges:</label>
+                                <div class="multi-select-container" id="updateBadges">
+                                    <input type="checkbox" id="upd_interview" value="interview"><label class="multi-select-label" for="upd_interview">Interview Coach</label>
+                                    <input type="checkbox" id="upd_system-design" value="system-design"><label class="multi-select-label" for="upd_system-design">System Design</label>
+                                    <input type="checkbox" id="upd_code-review" value="code-review"><label class="multi-select-label" for="upd_code-review">Code Review Pro</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="updateProfileBtn" class="auth-button" onclick="updateMentorProfile()">
+                            Update My Profile
+                        </button>
+                    </div>
+
+                    <div class="placeholder-content" id="mentee-profile-placeholder" style="margin-top: 2rem; display: none;">
+                        <h2>Mentee Settings</h2>
+                        <p>As a mentee, your settings are primarily managed by your login email.</p>
+                    </div>
+
+                </div>
+
+
+                <!-- Page 4: Code Reviews (Placeholder) -->
+                <div id="page-Code Reviews" class="app-page placeholder-content">
+                    <h2>My Code Reviews</h2>
+                    <p>This is where you'll see your pending and completed code reviews.</p>
+                </div>
+                <!-- Page 5: My Sessions (Placeholder) -->
+                <div id="page-My Sessions" class="app-page placeholder-content">
+                    <h2>My Sessions</h2>
+                    <p>This is where you'll see your upcoming and past booked sessions.</p>
+                </div>
+                <!-- Page 6: Messages (Placeholder) -->
+                <div id="page-Messages" class="app-page placeholder-content">
+                    <h2>Messages</h2>
+                    <p>This is where your chat conversations will appear.</p>
+                </div>
+
+            </main>
+        </div>
+    </main>
+
+    <script>
+        // --- API BASE URL ---
+        const API_BASE_URL = "https://bui71ytn97.execute-api.ap-southeast-1.amazonaws.com";
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- ALL DOM Element Selectors ---
+            const authView = document.getElementById('auth-view');
+            const appView = document.getElementById('app-view');
+            const mainElement = document.querySelector('main');
+
+            // Auth Form Elements
+            const signupBtn = document.getElementById('signupBtn');
+            const profileTypeInput = document.getElementById('profileType');
+            const mentorFieldsContainer = document.getElementById('mentor-fields-container');
+            const signupMessageDiv = document.getElementById('signup-message');
+
+            // App Header Elements
+            const welcomeBanner = document.getElementById('welcome-banner');
+            const profileToggleName = document.getElementById('profile-toggle-name');
+
+            // App Layout Elements
+            const sidebarTitle = document.getElementById('sidebar-title');
+            const sidebarNavLinks = document.getElementById('sidebar-nav-links');
+            const sidebarProfileDetails = document.getElementById('sidebar-profile-details');
+            const userSeniorityDisplay = document.getElementById('user-seniority-display');
+            const userDomainsDisplay = document.getElementById('user-domains-display');
+            const userBadgesDisplay = document.getElementById('user-badges-display');
+            const mainContentTitle = document.getElementById('main-content-title');
+            const appApiMessageDiv = document.getElementById('app-api-message');
+
+            // App Page Elements (Profile Update)
+            const updateSenioritySelect = document.getElementById('updateSeniority');
+            const updateDomainsContainer = document.getElementById('updateDomains');
+            const updateBadgesContainer = document.getElementById('updateBadges');
+            const mentorProfileUpdateForm = document.getElementById('profile-update-form');
+            const menteeProfilePlaceholder = document.getElementById('mentee-profile-placeholder');
+
+
+            // App Page Elements (Mentor List)
+            const mentorListContainer = document.getElementById('mentor-list-container');
+            const filterDomain = document.getElementById('filter-domain');
+            const filterSeniority = document.getElementById('filter-seniority');
+            const filterBadge = document.getElementById('filter-badge');
+
+            // --- State Variables ---
+            let currentUser = null;
+            let currentView = 'login';
+            let mentors = [];
+
+            // --- Navigation Links (Role-Based) ---
+            const menteeLinks = ['Dashboard', 'Find Mentor', 'My Sessions', 'Code Reviews', 'Messages'];
+            const mentorLinks = ['Dashboard', 'My Profile', 'My Sessions', 'Code Reviews', 'Messages'];
+
+            // --- UI & Message Toggling ---
+
+            window.toggleAuth = function(view) {
+                currentView = view;
+                document.getElementById('login-form').classList.toggle('hidden', view !== 'login');
+                document.getElementById('signup-form').classList.toggle('hidden', view !== 'signup');
+                hideApiMessage('signup');
+                document.getElementById('login-message').classList.add('hidden');
+            }
+
+            function showAppView() {
+                authView.classList.add('hidden');
+                appView.classList.remove('hidden');
+                welcomeBanner.classList.remove('hidden');
+                mainElement.style.maxWidth = '100%';
+                mainElement.style.padding = '0';
+                mainElement.style.margin = '0';
+                loadAppData();
+            }
+
+            function showAuthView() {
+                appView.classList.add('hidden');
+                welcomeBanner.classList.add('hidden');
+                authView.classList.remove('hidden');
+                mainElement.style.maxWidth = '500px';
+                mainElement.style.padding = '2rem';
+                mainElement.style.margin = '2rem auto';
+                hideAppApiMessage();
+                toggleAuth('login');
+            }
+
+            function showApiMessage(type, message, isError = false) {
+                let div = (type === 'signup') ? signupMessageDiv : document.getElementById('login-message');
+                if (!div) return;
+                div.textContent = message;
+                div.className = `api-message ${isError ? 'error' : 'success'}`;
+                div.classList.remove('hidden');
+            }
+
+            function hideApiMessage(type) {
+                let div = (type === 'signup') ? signupMessageDiv : document.getElementById('login-message');
+                if (div) div.classList.add('hidden');
+            }
+
+            function showAppApiMessage(message, isError = false) {
+                if (!appApiMessageDiv) return;
+                appApiMessageDiv.textContent = message;
+                appApiMessageDiv.className = `api-message ${isError ? 'error' : 'info'}`;
+                appApiMessageDiv.classList.remove('hidden');
+                if (!isError) {
+                     setTimeout(hideAppApiMessage, 4000);
+                }
+            }
+
+            function hideAppApiMessage() {
+                if (appApiMessageDiv) {
+                    appApiMessageDiv.classList.add('hidden');
+                }
+            }
+
+
+            // --- 2. AUTH LOGIC (Original) ---
+
+            window.toggleAuth = function(view) {
+                currentView = view;
+                document.getElementById('login-form').classList.toggle('hidden', view !== 'login');
+                document.getElementById('signup-form').classList.toggle('hidden', view !== 'signup');
+                hideApiMessage('signup');
+                document.getElementById('login-message').classList.add('hidden');
+            }
+
+            document.getElementById('profile-type-selector').addEventListener('click', (event) => {
+                if (event.target.classList.contains('profile-type-button')) {
+                    const selectedType = event.target.getAttribute('data-type');
+                    document.getElementById('profileType').value = selectedType;
+                    document.querySelectorAll('#profile-type-selector .profile-type-button').forEach(btn => {
+                        btn.classList.toggle('selected', btn.getAttribute('data-type') === selectedType);
+                    });
+                    document.getElementById('mentor-fields-container').classList.toggle('visible', selectedType === 'mentor');
+                }
+            });
+
+
+            window.signupUser = async function(event) {
+                event.preventDefault();
+                hideApiMessage('signup');
+                signupBtn.disabled = true;
+                signupBtn.textContent = 'Creating...';
+
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const profileType = document.getElementById('profileType').value;
+
+                if (!email || !password || password.length < 8) {
+                    showApiMessage('signup', 'Email required, password min 8 characters.', true);
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = 'Create Account';
+                    return;
+                }
+
+                const payload = { email, password, profile_type: profileType };
+                if (profileType === 'mentor') {
+                    payload.seniority = document.getElementById('seniority').value;
+                    payload.domains = Array.from(document.querySelectorAll('#domains input:checked')).map(el => el.value).join(',');
+                    payload.badges = Array.from(document.querySelectorAll('#badges input:checked')).map(el => el.value).join(',');
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/users/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.detail || `HTTP error! status: ${response.status}`);
+                    showApiMessage('signup', `Account created! Please Sign In.`);
+                    setTimeout(() => window.toggleAuth('login'), 2500);
+                } catch (error) {
+                    showApiMessage('signup', `Signup failed: ${error.message}`, true);
+                } finally {
+                     signupBtn.disabled = false;
+                     signupBtn.textContent = 'Create Account';
+                }
+            }
+
+            window.loginUser = async function(event) {
+                 event.preventDefault();
+                 const loginBtn = document.getElementById('loginBtn');
+                 loginBtn.disabled = true;
+                 loginBtn.textContent = 'Signing In...';
+
+                 const email = document.getElementById('loginEmail').value;
+                 const password = document.getElementById('loginPassword').value;
+
+                 try {
+                     const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password }),
+                     });
+                     const data = await response.json();
+                     if (!response.ok) {
+                         throw new Error(data.detail || `HTTP error! status: ${response.status}`);
+                     }
+                     currentUser = data;
+                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                     showAppView();
+                 } catch (error) {
+                      showApiMessage('login', `Login failed: ${error.message}`, true);
+                 } finally {
+                     loginBtn.disabled = false;
+                     loginBtn.textContent = 'Sign In';
+                 }
+            }
+
+            window.logout = function() {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                showAuthView();
+            }
+
+
+            // --- 3. APP VIEW LOGIC ---
+
+            async function loadAppData() {
+                if (!currentUser) return;
+
+                profileToggleName.textContent = currentUser.email.split('@')[0];
+
+                let navLinks = [];
+                if (currentUser.profile_type === 'mentor') {
+                    sidebarTitle.textContent = "Welcome, Mentor!";
+                    navLinks = mentorLinks;
+                    sidebarProfileDetails.classList.remove('hidden');
+                    populateMentorProfile(currentUser);
+                    setupProfileUpdateForm(currentUser); // Setup form fields
+                } else {
+                    sidebarTitle.textContent = "Welcome, Mentee!";
+                    navLinks = menteeLinks;
+                    sidebarProfileDetails.classList.add('hidden');
+                }
+
+                populateNav(navLinks);
+                showAppPage('Dashboard'); // Always start on the dashboard
+
+                // Delay mentor fetch to load dashboard fast
+                setTimeout(fetchMentorsWithFilters, 500);
+            }
+
+            function populateMentorProfile(mentor) {
+                userSeniorityDisplay.textContent = mentor.seniority || 'Not set';
+
+                const createTags = (container, itemsString, type) => {
+                    container.innerHTML = '';
+                    if (itemsString && itemsString.length > 0) {
+                        itemsString.split(',').forEach(item => {
+                            const span = document.createElement('span');
+                            span.className = `detail-item ${type}`;
+                            span.textContent = item;
+                            container.appendChild(span);
+                        });
+                    } else {
+                        container.innerHTML = '<span class="detail-item">None</span>';
+                    }
+                };
+
+                createTags(userDomainsDisplay, mentor.domains, '');
+                createTags(userBadgesDisplay, mentor.badges, 'badge');
+            }
+
+            // --- Setup Profile Update Form ---
+            function setupProfileUpdateForm(mentor) {
+                 if (mentor.profile_type === 'mentor') {
+                    mentorProfileUpdateForm.style.display = 'block';
+                    menteeProfilePlaceholder.style.display = 'none';
+
+                    // 1. Set Seniority
+                    updateSenioritySelect.value = mentor.seniority || 'senior';
+
+                    // 2. Set Domains and Badges (Check/Uncheck boxes)
+                    const existingDomains = (mentor.domains || '').split(',');
+                    const existingBadges = (mentor.badges || '').split(',');
+
+                    document.querySelectorAll('#updateDomains input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = existingDomains.includes(checkbox.value);
+                    });
+                    document.querySelectorAll('#updateBadges input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = existingBadges.includes(checkbox.value);
+                    });
+
+                } else {
+                     mentorProfileUpdateForm.style.display = 'none';
+                     menteeProfilePlaceholder.style.display = 'block';
+                }
+            }
+
+
+            // --- Update Profile API Call ---
+            window.updateMentorProfile = async function() {
+                hideAppApiMessage();
+
+                const updateBtn = document.getElementById('updateProfileBtn');
+                const originalText = updateBtn.textContent;
+                updateBtn.disabled = true;
+                updateBtn.textContent = 'Saving...';
+
+                const newSeniority = updateSenioritySelect.value;
+                const newDomains = Array.from(document.querySelectorAll('#updateDomains input:checked')).map(el => el.value).join(',');
+                const newBadges = Array.from(document.querySelectorAll('#updateBadges input:checked')).map(el => el.value).join(',');
+
+                const payload = {
+                    seniority: newSeniority,
+                    domains: newDomains,
+                    badges: newBadges
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/users/${currentUser.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.detail || `HTTP error! status: ${response.status}`);
+
+                    // Update currentUser state and local storage with new details
+                    currentUser = { ...currentUser, ...payload };
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                    // Update sidebar display
+                    populateMentorProfile(currentUser);
+
+                    showAppApiMessage('Profile updated successfully!');
+
+                } catch (error) {
+                    console.error('Profile update failed:', error);
+                    showAppApiMessage(`Profile update failed: ${error.message}`, true);
+                } finally {
+                    updateBtn.disabled = false;
+                    updateBtn.textContent = originalText;
+                }
+            }
+
+            function populateNav(links) {
+                sidebarNavLinks.innerHTML = '';
+
+                links.forEach((linkName, index) => {
+                    const li = document.createElement('li');
+                    const aSide = document.createElement('a');
+                    aSide.href = '#';
+                    aSide.textContent = linkName;
+                    aSide.dataset.page = linkName;
+                    if (index === 0) aSide.classList.add('active');
+                    li.appendChild(aSide);
+                    sidebarNavLinks.appendChild(li);
+                });
+
+                document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const pageName = e.target.dataset.page;
+                        showAppPage(pageName);
+                    });
+                });
+            }
+
+            function showAppPage(pageName) {
+                document.querySelectorAll('.app-page').forEach(page => {
+                    page.style.display = 'none';
+                });
+                const targetPage = document.getElementById(`page-${pageName}`);
+                if (targetPage) {
+                    targetPage.style.display = 'block';
+                }
+
+                mainContentTitle.textContent = pageName;
+                hideAppApiMessage();
+
+                // Specific handler for My Profile (needs state setup)
+                if (pageName === 'My Profile' && currentUser && currentUser.profile_type === 'mentor') {
+                    setupProfileUpdateForm(currentUser);
+                }
+
+
+                document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                    link.classList.toggle('active', link.dataset.page === pageName);
+                });
+            }
+
+            // --- 4. DATA FETCHING ---
+
+            window.fetchMentorsWithFilters = async function() {
+                mentorListContainer.innerHTML = '<p>Loading mentors...</p>';
+                const domain = filterDomain.value;
+                const seniority = filterSeniority.value;
+                const badge = filterBadge.value;
+
+                const queryParams = new URLSearchParams();
+                if (domain) queryParams.append('domain', domain);
+                if (seniority) queryParams.append('seniority', seniority);
+                if (badge) queryParams.append('badge', badge);
+
+                try {
+                    const mentorsResponse = await fetch(`${API_BASE_URL}/api/users/mentors?${queryParams.toString()}`);
+                    let fetchedMentors = await mentorsResponse.json();
+                    if (!mentorsResponse.ok) throw new Error(fetchedMentors.detail || 'Failed to fetch mentors');
+
+                    const mentorsWithSlots = await Promise.all(fetchedMentors.map(async (mentor) => {
+                        try {
+                            const availabilityUrl = `${API_BASE_URL}/api/bookings/mentors/${mentor.id}/availability?only_available=true`;
+                            const availabilityResponse = await fetch(availabilityUrl);
+
+                            let firstAvailableSlot = null;
+                            if (availabilityResponse.ok) {
+                                const slots = await availabilityResponse.json();
+                                firstAvailableSlot = slots && slots.length > 0 ? slots[0] : null;
+                            }
+
+                            return {
+                                ...mentor,
+                                availability_id: firstAvailableSlot ? firstAvailableSlot.availability_id : null,
+                                next_slot_start: firstAvailableSlot ? firstAvailableSlot.start_time : null
+                            };
+                        } catch (availError) {
+                            return { ...mentor, availability_id: null };
+                        }
+                    }));
+
+                    mentors = mentorsWithSlots;
+                    renderMentorCards();
+
+                } catch (error) {
+                    console.error('Error fetching mentors or availability:', error);
+                    mentorListContainer.innerHTML = `<p style="color: var(--danger-color);">Error loading mentors: ${error.message}</p>`;
+                }
+            }
+
+            // --- MODIFIED: Render Mentor Cards (3-column layout per row) ---
+            function renderMentorCards() {
+                if (!mentors || mentors.length === 0) {
+                    mentorListContainer.innerHTML = '<p>No mentors match the current filters.</p>';
+                    return;
+                }
+
+                mentorListContainer.innerHTML = '';
+
+                mentors.forEach(mentor => {
+                    const card = document.createElement('div');
+                    card.className = 'mentor-card';
+
+                    const createTagsHTML = (itemsString, typeClass) => {
+                        if (!itemsString) return '';
+                        return itemsString.split(',')
+                            .map(item => `<span class="tag ${typeClass}">${item.trim()}</span>`)
+                            .join('');
+                    };
+
+                    const canBook = currentUser && currentUser.profile_type === 'mentee';
+                    const hasSlot = mentor.availability_id !== null;
+                    const buttonDisabled = !canBook || !hasSlot;
+                    let buttonText = 'Book Session';
+                    let buttonOnClick = `bookSession('${mentor.id}', ${mentor.availability_id})`;
+
+                    if (!canBook) {
+                        buttonText = 'Mentee only';
+                    } else if (!hasSlot) {
+                        buttonText = 'No Slots Available';
+                    } else if (mentor.next_slot_start) {
+                         try {
+                             const date = new Date(mentor.next_slot_start);
+                             buttonText = `Book ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+                         } catch (e) {}
+                    }
+
+                    card.innerHTML = `
+                        <!-- Column 1: Avatar -->
+                        <div class="card-header">
+                            <img src="https://placehold.co/64x64/E9D5FF/6D28D9?text=${mentor.email ? mentor.email[0].toUpperCase() : 'M'}" alt="Mentor Avatar" class="avatar">
+                        </div>
+
+                        <!-- Column 2: Info and Tags -->
+                        <div class="mentor-info">
+                            <h3>${mentor.email || 'Mentor Email'}</h3>
+                            <p>${mentor.seniority || 'Mentor'}</p>
+                            <div class="tags-container" style="margin-top: 0.5rem;">
+                                <h4>DOMAINS</h4>
+                                <div class="tags">
+                                    ${createTagsHTML(mentor.domains, '') || '<span class="tag">Not specified</span>'}
+                                </div>
+                                <h4 style="margin-top: 0.5rem;">BADGES</h4>
+                                <div class="tags">
+                                    ${createTagsHTML(mentor.badges, 'badge') || '<span class="tag">None</span>'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Actions -->
+                        <div class="card-footer">
+                            <button class="btn btn-secondary" onclick="alert('Messaging feature coming soon!')">Message</button>
+                            <button class="btn btn-primary book-session-btn" onclick="${!buttonDisabled ? buttonOnClick : ''}" ${buttonDisabled ? 'disabled' : ''}>
+                                ${buttonText}
+                            </button>
+                        </div>
+                    `;
+                    mentorListContainer.appendChild(card);
+                });
+            }
+
+            // --- Book Session Function ---
+            window.bookSession = async function(mentorId, availabilityId) {
+                hideAppApiMessage();
+                if (!currentUser || currentUser.profile_type !== 'mentee') {
+                    showAppApiMessage('Only mentees can book sessions.', true);
+                    return;
+                }
+                if (!availabilityId) {
+                    showAppApiMessage('Cannot book: Availability ID is missing.', true);
+                    return;
+                }
+
+                // Find the button (complex lookup)
+                const buttons = document.querySelectorAll('.book-session-btn');
+                let button = null;
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('onclick') === `bookSession('${mentorId}', ${availabilityId})`) {
+                        button = btn;
+                    }
+                });
+
+                if (!button) return;
+                const originalButtonText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Booking...';
+
+                showAppApiMessage(`Booking session with Mentor ${mentorId}...`, false);
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/bookings/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            mentor_id: String(mentorId),
+                            mentee_id: String(currentUser.id),
+                            availability_id: availabilityId,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        const errorDetail = data.detail || response.statusText || `HTTP error ${response.status}`;
+                        throw new Error(errorDetail);
+                    }
+
+                    showAppApiMessage(`Booking successful! ID: ${data.booking_id}. Status: ${data.status}`);
+                    fetchMentorsWithFilters(); // Refresh list to show updated availability
+
+                } catch (error) {
+                    console.error('Error creating booking:', error);
+                    showAppApiMessage(`Booking failed: ${error.message}`, true);
+                } finally {
+                    // Restore button state after a short delay for visual confirmation
+                     setTimeout(() => {
+                        if (button) {
+                            button.disabled = (!currentUser || currentUser.profile_type === 'mentor');
+                            button.textContent = originalButtonText;
+                        }
+                     }, 500);
+                }
+            }
+
+
+            // --- 5. INITIALIZATION ---
+            function checkLoginOnLoad() {
+                 const storedUser = localStorage.getItem('currentUser');
+                 if (storedUser) {
+                     try {
+                         currentUser = JSON.parse(storedUser);
+                         if (currentUser && currentUser.id && currentUser.email && currentUser.profile_type) {
+                             showAppView();
+                         } else {
+                             localStorage.removeItem('currentUser');
+                             showAuthView();
+                         }
+                     } catch (e) {
+                          localStorage.removeItem('currentUser');
+                          showAuthView();
+                     }
+                 } else {
+                     showAuthView();
+                 }
+            }
+
+            checkLoginOnLoad();
+
+        });
+    </script>
+</body>
+</html>
