@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-gateway-deployment
+spec:
+  replicas: 1 # We can scale this later
+  selector:
+    matchLabels:
+      app: nginx-gateway
+  template:
+    metadata:
+      labels:
+        app: nginx-gateway
+    spec:
+      containers:
+      - name: nginx-gateway
+        image: nginx:1.25-alpine # Use the standard nginx image
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+      volumes:
+      - name: nginx-config-volume
+        configMap:
+          name: nginx-config # Use the ConfigMap we defined
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-gateway-service
+  # This annotation tells AWS to create an Application Load Balancer (ALB)
+  # This only works if the AWS Load Balancer Controller is installed.
+  # For our simple test, we will use a Classic Load Balancer (Type=LoadBalancer)
+  # annotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb" # Use NLB or ALB
+spec:
+  # This creates an AWS Classic Load Balancer (CLB)
+  # This is the "API Gateway" for our K8s cluster
+  type: LoadBalancer
+  selector:
+    app: nginx-gateway # Forward traffic to our nginx-gateway pods
+  ports:
+  - protocol: TCP
+    port: 80 # The Load Balancer listens on port 80
+    targetPort: 80 # It forwards traffic to the Nginx container's port 80

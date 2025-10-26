@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  # This creates an AWS Application Load Balancer (ALB)
+  # This is the "API Gateway" for our K8s cluster
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80 # The Load Balancer listens on port 80
+    targetPort: 80 # It forwards traffic to the Nginx container's port 80

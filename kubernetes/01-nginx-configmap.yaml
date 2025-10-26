@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    server {
+      listen 80;
+
+      # 1. Route for Frontend (HTML Server)
+      # This will be handled by the Ingress/Load Balancer,
+      # but we'll proxy to the Nginx service itself for now.
+      location / {
+        # 'nginx-service' is the name of the Kubernetes service
+        proxy_pass http://nginx-service:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+
+      # 2. Route for User Service
+      # Kubernetes internal DNS: <service-name>.<namespace>.svc.cluster.local
+      # We can just use the service name: 'user-service'
+      location = /api/users/login {
+          proxy_pass http://user-service:8000/login;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+      }
+      location = /api/users/mentors {
+          proxy_pass http://user-service:8000/mentors$is_args$args;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+      }
+      location = /api/users {
+          proxy_pass http://user-service:8000/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+      }
+      location /api/users/ {
+           rewrite ^/api/users/(.*)$ /$1 break;
+           proxy_pass http://user-service:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+      }
+
+      # 3. Route for Booking Service
+      location /api/bookings {
+        rewrite ^/api/bookings/(.*)$ /$1 break;
+        rewrite ^/api/bookings$ / break;
+        proxy_pass http://booking-service:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+
+      # 4. Route for Code Review Service
+      location /api/reviews {
+        rewrite ^/api/reviews/(.*)$ /$1 break;
+        rewrite ^/api/reviews$ / break;
+        proxy_pass http://code-review-service:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+
+      # 5. Route for Messaging Service
+      location /api/messages {
+        rewrite ^/api/messages/(.*)$ /$1 break;
+        rewrite ^/api/messages$ / break;
+        proxy_pass http://messaging-service:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+
+      # 6. Route for WebRTC Service
+      location /api/webrtc {
+        rewrite ^/api/webrtc/(.*)$ /$1 break;
+        rewrite ^/api/webrtc$ / break;
+        proxy_pass http://webrtc-service:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+    }

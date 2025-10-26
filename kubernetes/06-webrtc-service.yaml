@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webrtc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webrtc-service
+  template:
+    metadata:
+      labels:
+        app: webrtc-service
+    spec:
+      containers:
+      - name: webrtc-service
+        image: 459594646623.dkr.ecr.ap-southeast-1.amazonaws.com/skillbridge-webrtc-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webrtc-service
+spec:
+  selector:
+    app: webrtc-service
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

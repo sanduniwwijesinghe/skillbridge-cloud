@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+passlib
+email-validator
+bcrypt>=3.1,<4.0

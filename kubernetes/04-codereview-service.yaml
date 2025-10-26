@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-review-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-review-service
+  template:
+    metadata:
+      labels:
+        app: code-review-service
+    spec:
+      containers:
+      - name: code-review-service
+        image: 459594646623.dkr.ecr.ap-southeast-1.amazonaws.com/skillbridge-code-review-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: DATABASE_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-review-service
+spec:
+  selector:
+    app: code-review-service
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP
