@@ -1,11 +1,73 @@
-node_modules/
-.env
-__pycache__/
-venv/
-.DS_Store
-*.pyc
-.idea/
-dist/
-build/
-.aws-sam/
+####################################
+# SkillBridge Project .gitignore
+# Stack: FastAPI + React + AWS + EKS
+####################################
 
+# === Node / React frontend ===
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# === Python / Backend microservices ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+venv/
+.env
+.env.*
+Pipfile
+Pipfile.lock
+
+# === Kubernetes / Deployment logs ===
+*.log
+*.out
+*.pid
+*.bak
+*.tmp
+*.swp
+
+# === AWS / Cloud credentials ===
+.aws/
+*.pem
+*.crt
+*.key
+*.tfstate
+*.tfstate.backup
+.aws-sam/
+.aws-credentials
+aws-exports.js
+amplifyconfiguration.json
+
+# === Mac / System files ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === IDE / Editor settings ===
+.vscode/
+.idea/
+*.iml
+
+# === Docker ===
+.dockerignore
+Dockerfile~
+docker-compose.override.yml
+*.tar
+
+# === Git internals ===
+.gitignore
+.gitkeep
+
+# === Temporary / Misc ===
+tmp/
+cache/
+__temp__/
